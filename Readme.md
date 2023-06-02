@@ -1,3 +1,5 @@
 Projetos relacionados a Portugol, desenvolvidos durante o curso técnico no SENAI.
 
-Projeto 1: AdivinhaNumero - Esse projeot consistia em um desafio de desenvolver um algoritmo que, com base em perguntas de sim ou não, conseguisse adivinhar um número inteiro escolhido entre 1 e 100, utilizando no máximo 7 perguntas.
+Projeto 1: [AdivinhaNumero](https://github.com/siddigo/SENAI.Portugol/blob/main/AdivinhaNumero.por) - Esse projeto consistia em um desafio de desenvolver um algoritmo que, com base em perguntas de sim ou não, conseguisse adivinhar um número inteiro escolhido entre 1 e 100, utilizando no máximo 7 perguntas.
+
+Projeto 2: [CaixaMercearia](https://github.com/siddigo/SENAI.Portugol/blob/main/CaixaMercearia.por) - Aqui, o desafio era criar um sistema de caixa registradora para mercearia, onde o usuário identificasse os produtos na hora (sem um banco de dados). Além disso, era necessário inserir um desconto de 5% para todos os produtos que fossem adquiridos em quantidade superior a 3. Outra coisa importante era o uso de vetores para salvar quantidade, valor unitario e total por produto, sendo esse ultimo sempre calculado no momento da inserção do produto.
