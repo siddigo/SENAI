@@ -7,16 +7,26 @@ programa
 	const inteiro maxFilas=30,maxColunas=10
 	const logico v=verdadeiro
 	const logico f=falso
+	const cadeia t="\t"
+	const inteiro tamCelula=15,larguraCabecalho=60
+
 	
 	inteiro aviao[maxFilas][maxColunas]
-	cadeia clientes[maxFilas*maxColunas][2]
+	cadeia cliente[maxFilas*maxColunas][4]
+	
 	inteiro totalFilas=0,totalColunas=0,opcao=0
 	cadeia nomeCompanhia="SWEET FLIGHT",acaoPoltrona="Cadastrar"
-		
+
+	inteiro totalClientes=1
+
 	funcao inicio()
 	{
 		logico sair=f
 
+		cliente[0][0]="Vazio"
+		cliente[0][1]=""
+		cliente[0][2]=""
+		
 		enquanto (nao sair)
 		{
 			ImprimirMenu()
@@ -26,10 +36,10 @@ programa
 			{
 				caso 1: CadastrarPoltronas() pare
 				caso 2: ReservarPoltrona() pare
-				caso 3: escreva("Opção 3") AguardarEnter() inicio () pare
-				caso 4: escreva("Opção 4") AguardarEnter() inicio () pare
-				caso 5: escreva("Opção 5") AguardarEnter() inicio () pare
-				caso 6: escreva("Opção 6") AguardarEnter() inicio () pare
+				caso 3: VerPoltronasDisponiveis() pare
+				caso 4: VerPoltronasOcupadas() pare
+				caso 5: VerPassageiro() pare
+				caso 6: TotalizarPoltronas() pare
 				caso 7: sair=v pare
 				caso contrario: ImprimirErro("Escolha uma opção entre 1 e 7!") inicio () pare
 			}
@@ -204,10 +214,11 @@ programa
 		cadeia tituloPagina="Cadastrar Reserva"
 		logico poltronaDisponivel=f
 		inteiro fila=0,coluna=0
+		inteiro idCliente=totalClientes
+		
 		enquanto(nao poltronaDisponivel)
 		{
 			limpa()
-			ImprimirCabecalho(tituloPagina)
 			ObterFilaReserva(tituloPagina,fila)
 			ObterColunaReserva(tituloPagina,coluna)
 
@@ -219,13 +230,66 @@ programa
 			}
 		}
 
-		ImprimirMensagem("Poltrona "+fila+"-"+coluna+" reservada com sucesso!",1.5)
+		CadastrarCliente(fila,coluna)
+		aviao[fila-1][coluna-1]=idCliente
+		
+		ImprimirMensagem("Poltrona "+fila+"-"+coluna+" reservada com sucesso para o cliente "+cliente[idCliente][0],1.5)
 	}
 
+	funcao CadastrarCliente(inteiro fila, inteiro coluna)
+	{
+		cadeia tituloPagina="Cadastro Cliente"
+		cadeia nome=""
+		inteiro idade=0
+		
+		limpa()
+		ImprimirCabecalho(tituloPagina)
+		
+		LerRepostaNaoNula("Nome do cliente?", nome, tituloPagina)
+		
+		limpa()
+		ImprimirCabecalho(tituloPagina)
+		
+		LerInteiroPositivo("Idade do cliente?", idade, tituloPagina)
+
+		cliente[totalClientes][0]=nome
+		cliente[totalClientes][1]=Tipos.inteiro_para_cadeia(idade, 10)
+		cliente[totalClientes][2]=Tipos.inteiro_para_cadeia(fila, 10)
+		cliente[totalClientes][3]=Tipos.inteiro_para_cadeia(coluna, 10)
+
+		totalClientes++
+		
+	}
+
+	funcao RemoverCliente(inteiro idCliente)
+	{
+		para (inteiro i=idCliente;i<totalClientes-1;i++)
+		{
+			cliente[i][0]=cliente[i+1][0]
+			cliente[i][1]=cliente[i+1][1]
+			cliente[i][2]=cliente[i+1][2]
+		}
+		
+		totalClientes--
+		cliente[totalClientes][0]=""
+		cliente[totalClientes][1]=""
+		cliente[totalClientes][2]=""
+		
+	}
+	
 	funcao ValidarPoltronaDisponivel(inteiro fila,inteiro coluna, logico &poltronaDisponivel)
 	{
 		inteiro idFil=fila-1
 		inteiro idCol=coluna-1
+
+		inteiro idCliente=aviao[idFil][idCol]
+
+		poltronaDisponivel=v
+		
+		se(idCliente>0)
+		{
+			poltronaDisponivel=f
+		}
 		
 	}
 
@@ -234,14 +298,20 @@ programa
 		cadeia tituloPagina="Remover Reserva"
 		
 		limpa()
-		ImprimirCabecalho(tituloPagina)		
+		ImprimirCabecalho(tituloPagina)
+		
+		escreva("Ainda não é possível remover reservas!")
+		AguardarEnter()
 	}
 
 	funcao ObterFilaReserva(cadeia tituloPagina,inteiro &fila)
 	{
-		logico filaValida=f
+		logico filaValida=f,maisFilas=f
 		faca
-		{
+		{	
+			limpa()
+			ImprimirCabecalho(tituloPagina)
+			
 			LerInteiroPositivo("Qual é a Fila da reserva?",fila,tituloPagina)
 			se(fila<=totalFilas)
 			{
@@ -249,7 +319,14 @@ programa
 			}
 			senao
 			{
-				ImprimirErro("A fila não existe no avião!\n Máximo de filas = "+totalFilas)
+				ImprimirErro("A fila não existe no avião!\nMáximo de filas = "+totalFilas)
+				limpa()
+				LerSN("Deseja cadastrar mais filas?",maisFilas)
+				se(maisFilas)
+				{
+					CadastrarFilas()
+				}
+				
 			}
 		}
 		enquanto(nao filaValida)
@@ -257,9 +334,12 @@ programa
 	
 	funcao ObterColunaReserva(cadeia tituloPagina,inteiro &coluna)
 	{
-		logico colunaValida=f
+		logico colunaValida=f,maisColunas=f
 		faca
 		{
+			limpa()
+			ImprimirCabecalho(tituloPagina)
+			
 			LerInteiroPositivo("Qual é a Coluna da reserva?",coluna,tituloPagina)
 			se(coluna<=totalColunas)
 			{
@@ -267,35 +347,221 @@ programa
 			}
 			senao
 			{
-				ImprimirErro("A coluna não existe no avião!\n Máximo de Colunas = "+totalColunas)
+				ImprimirErro("A coluna não existe no avião!\nMáximo de Colunas = "+totalColunas)
+				limpa()
+				LerSN("Deseja cadastrar mais colunas?",maisColunas)
+				se(maisColunas)
+				{
+					CadastrarColunas()
+				}
 			}
 		}
 		enquanto(nao colunaValida)	
 	}
+
+	funcao VerPoltronasDisponiveis()
+	{
+		cadeia tituloPagina="Poltronas Disponíveis"
+		limpa()
+		ImprimirCabecalho(tituloPagina)
+		logico primeiraLinha=v
+
+		para(inteiro i=0;i<totalFilas;i++)
+		{
+			cadeia linhaEscrever=""
+			cadeia cabFila="Fila "+(i+1)+":"
+			logico primeiraCelula=v
+			
+			CentralizarTexto(cabFila,tamCelula)
+			
+			//Centralizar Cada texto de célula
+			// Inserir texto vaziocentralizado nas celulas vaizas
+			para(inteiro j=0;j<totalColunas;j++)
+			{
+				cadeia textoCelula=""
+
+				se(primeiraCelula)
+				{
+					linhaEscrever=cabFila
+					primeiraCelula=f
+
+					se(primeiraLinha)
+					{
+						textoCelula=" "
+						CentralizarTexto(textoCelula,tamCelula)
+						escreva(textoCelula)
+					}
+				}
+				
+				se(primeiraLinha)
+				{
+					textoCelula="Coluna "+(j+1)
+					CentralizarTexto(textoCelula,tamCelula)
+					escreva(textoCelula)	
+				}
+				
+				se(aviao[i][j]==0)
+				{
+					textoCelula=(i+1)+"-"+(j+1)
+					CentralizarTexto(textoCelula,tamCelula)
+					linhaEscrever=linhaEscrever+textoCelula
+				}
+				senao
+				{
+					textoCelula="Ocupada"
+					CentralizarTexto(textoCelula,tamCelula)
+					linhaEscrever=linhaEscrever+textoCelula
+				}
+				
+			}
+			se(primeiraLinha) 
+			{
+				primeiraLinha=f
+				escreva("\n")
+			}
+			escreva(linhaEscrever)
+			escreva("\n")
+		}
+		escreva("\n\nPressione ENTER para continuar!")
+		AguardarEnter()
+	}
+
+	funcao VerPoltronasOcupadas()
+	{
+		cadeia tituloPagina="Poltronas Reservadas"
+		limpa()
+		ImprimirCabecalho(tituloPagina)
+
+		se(totalClientes>1)
+			{
+			
+			cadeia nome="Nome"
+			cadeia idade="Idade"
+			cadeia fila="Fila"
+			cadeia coluna="Coluna"
+			
+			CentralizarTexto(nome,tamCelula)
+			CentralizarTexto(idade,tamCelula)
+			CentralizarTexto(fila,tamCelula)
+			CentralizarTexto(coluna,tamCelula)
 	
+			escreva(fila+coluna+nome+idade)
+			escreva("\n")
+					
+			para(inteiro i=1;i<totalClientes;i++)
+			{
+				nome=cliente[i][0]
+				idade=cliente[i][1]
+				fila=cliente[i][2]
+				coluna=cliente[i][3]
+				
+				CentralizarTexto(nome,tamCelula)
+				CentralizarTexto(idade,tamCelula)
+				CentralizarTexto(fila,tamCelula)
+				CentralizarTexto(coluna,tamCelula)
+	
+				escreva(fila+coluna+nome+idade)
+				escreva("\n")
+				
+			}
+		}
+		senao
+		{
+			escreva("Não há Poltronas Reservadas!")
+		}
+		escreva("\n\nPressione ENTER para continuar!")
+		AguardarEnter()
+	}
+
+	funcao VerPassageiro()
+	{
+		cadeia tituloPagina="Consultar Passageiro"
+		limpa()
+		ImprimirCabecalho(tituloPagina)
+
+		cadeia nomeFiltro=""
+		logico achou=f
+		
+		LerRepostaNaoNula("Qual o nome do cliente?", nomeFiltro, tituloPagina)
+		
+		cadeia nome="Nome"
+		cadeia idade="Idade"
+		cadeia fila="Fila"
+		cadeia coluna="Coluna"
+		
+		CentralizarTexto(nome,tamCelula)
+		CentralizarTexto(idade,tamCelula)
+		CentralizarTexto(fila,tamCelula)
+		CentralizarTexto(coluna,tamCelula)
+			
+		para(inteiro i=1;i<totalClientes;i++)
+		{
+			inteiro posicao=Texto.posicao_texto(nomeFiltro, nome, 0)
+
+			se(posicao>=0)
+			{
+				se(nao achou)
+				{
+					escreva(nome+idade+fila+coluna)
+					escreva("\n")
+				}
+				achou=v
+				
+				nome=cliente[i][0]
+				idade=cliente[i][1]
+				fila=cliente[i][2]
+				coluna=cliente[i][3]
+				
+				CentralizarTexto(nome,tamCelula)
+				CentralizarTexto(idade,tamCelula)
+				CentralizarTexto(fila,tamCelula)
+				CentralizarTexto(coluna,tamCelula)
+	
+				escreva(nome+idade+fila+coluna)
+				escreva("\n")
+			}
+		}
+
+		se(nao achou)
+		{
+			escreva("Não há reservas realziadas com este nome de passageiro!")
+		}
+	}
+
+	funcao TotalizarPoltronas()
+	{
+		cadeia tituloPagina="Totalizado do Voo"
+		limpa()
+		ImprimirCabecalho(tituloPagina)
+
+		inteiro totalPoltronas=totalFilas*totalColunas
+		inteiro totalReservas=totalClientes-1
+		inteiro totalDisponiveis=totalPoltronas-totalReservas
+		
+		real percentualReservas=(Tipos.inteiro_para_real(totalReservas)/Tipos.inteiro_para_real(totalPoltronas))*100
+		real percentualDisponiveis=(Tipos.inteiro_para_real(totalDisponiveis)/Tipos.inteiro_para_real(totalPoltronas))*100
+
+	}
 	funcao ImprimirCabecalho(cadeia tituloPagina)
 	{
-		
-		inteiro larguraCabecalho=30
-
 		cadeia nomeCentro=nomeCompanhia
 		cadeia tituloCentro=tituloPagina
 		cadeia linhaBranco=""
 
-		CentralizarTexto(larguraCabecalho-2, nomeCentro)
-		CentralizarTexto(larguraCabecalho-2, tituloCentro)
-		CentralizarTexto(larguraCabecalho-2, linhaBranco)
+		CentralizarTexto(nomeCentro,larguraCabecalho-2)
+		CentralizarTexto(tituloCentro,larguraCabecalho-2)
+		CentralizarTexto(linhaBranco,larguraCabecalho-2)
 		
-		EscreverLinha(larguraCabecalho,f)
+		escreva(EscreverLinha(larguraCabecalho,f))
 		escreva("\n|"+nomeCentro+"|")
 		escreva("\n|"+linhaBranco+"|")
 		escreva("\n|"+tituloCentro+"|")
-		EscreverLinha(larguraCabecalho,v)
+		escreva(EscreverLinha(larguraCabecalho,v))
 		escreva("\n")
 		escreva("\n")
 	}
 
-	funcao CentralizarTexto(inteiro numeroCaracteres, cadeia &texto)
+	funcao CentralizarTexto(cadeia &texto,inteiro numeroCaracteres)
 	{
 		inteiro tamanhoTexto=Texto.numero_caracteres(texto)
 
@@ -319,16 +585,19 @@ programa
 		
 	}
 
-	funcao EscreverLinha(inteiro numeroCaracteres,logico comEnter)
+	funcao cadeia EscreverLinha(inteiro numeroCaracteres,logico comEnter)
 	{
+		cadeia linha = ""
+		
 		se (comEnter)
 		{
-			escreva("\n")
+			linha += "\n"
 		}
 		para(inteiro i=1;i<=numeroCaracteres;i++)
 		{
-			escreva("-")
+			linha += "-"
 		}
+		retorne linha
 	}
 	
 	funcao ImprimirMenu()
@@ -340,14 +609,20 @@ programa
 		escreva("\n3 - Ver Poltronas Disponíveis")
 		escreva("\n4 - Ver Poltronas Reservadas")
 		escreva("\n5 - Consultar Passageiro")
-		escreva("\n6 - Totalizador de Poltronas")
+		escreva("\n6 - Totalizador do Voo")
 		escreva("\n7 - Sair")
+		escreva("\n")
 		escreva("\n")
 	}
 	
 	funcao ImprimirMenuCadastroPoltornas()
 	{
 		cadeia tituloPagina=acaoPoltrona+" Poltronas"
+		cadeia acaoFila="Cadastrar"
+		cadeia acaoColuna="Cadastrar"
+		
+		se(totalFilas>0){acaoFila="Editar"}
+		se(totalColunas>0){acaoColuna="Editar"}
 		
 		limpa()
 		ImprimirCabecalho(tituloPagina)
@@ -355,9 +630,10 @@ programa
 		escreva("\nQuantidade de FILAS atual: "+totalFilas)
 		escreva("\nQuantidade de COLUNAS atual: "+totalColunas)
 		escreva("\n")
-		escreva("\n1 - "+acaoPoltrona+" Filas")
-		escreva("\n2 - "+acaoPoltrona+" Colunas")
+		escreva("\n1 - "+acaoFila+" Filas")
+		escreva("\n2 - "+acaoColuna+" Colunas")
 		escreva("\n3 - Voltar")
+		escreva("\n")
 		escreva("\n")
 	}
 	
@@ -367,11 +643,10 @@ programa
 		
 		limpa()
 		ImprimirCabecalho(tituloPagina)
-
-		escreva("\n")
 		escreva("\n1 - Cadastrar Reserva")
 		escreva("\n2 - Remover Reserva")
 		escreva("\n3 - Voltar")
+		escreva("\n")
 		escreva("\n")
 	}
 	
@@ -425,7 +700,7 @@ programa
 				respostaInteiro=Tipos.cadeia_para_inteiro(respostaCadeia, 10)
 				se (respostaInteiro<=0)
 				{
-					ImprimirErro("A quantidade precisa ser inteiro positivo!")
+					ImprimirErro("A resposta precisa ser inteiro positivo!")
 					limpa()
 					ImprimirCabecalho(tituloPagina)
 					respostaCadeia=""
@@ -433,12 +708,36 @@ programa
 			}
 			senao
 			{
-				ImprimirErro("A quantidade precisa ser inteiro positivo!")
+				ImprimirErro("A resposta precisa ser inteiro positivo!")
 				limpa()
 				ImprimirCabecalho(tituloPagina)
 			}
 		}
 		enquanto (nao Tipos.cadeia_e_inteiro(respostaCadeia, 10))
+	}
+		
+	funcao LerRepostaNaoNula(cadeia pergunta,cadeia &resposta,cadeia tituloPagina)
+	{
+		cadeia respostaCadeia=""
+		
+		faca
+		{	
+			escreva(pergunta)
+			escreva("\n")
+			escreva("\n")
+			leia(respostaCadeia)
+			se (respostaCadeia!="")
+			{
+				resposta=respostaCadeia
+			}
+			senao
+			{
+				ImprimirErro("A resposta não pode ficar em branco!")
+				limpa()
+				ImprimirCabecalho(tituloPagina)
+			}
+		}
+		enquanto (respostaCadeia=="")
 	}
 
 	funcao LerSN(cadeia perguntaSN,logico &respostaSN)
@@ -473,7 +772,7 @@ programa
 		}
 	}
 	
-	funcao AguardarEnter()	
+	funcao AguardarEnter()
 	{	
 		cadeia enter
 		leia(enter)
