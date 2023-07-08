@@ -9,7 +9,7 @@ programa
 	const logico v=verdadeiro
 	const logico f=falso
 	const cadeia t="\t",n="\n"
-	const inteiro tamCelula=15,larguraCabecalho=120
+	const inteiro tamCelula=15,larguraCabecalho=60
 
 	
 	inteiro aviao[maxFilas][maxColunas]
@@ -634,7 +634,7 @@ programa
 					}
 					senao
 					{
-						matrizImprimir[i+1][j+1]="X"
+						matrizImprimir[i+1][j+1]=""
 					
 					}
 				}
