@@ -1,0 +1,517 @@
+programa
+{
+	inclua biblioteca Texto
+	inclua biblioteca Util
+	inclua biblioteca Tipos
+	
+	const inteiro maxPerguntas=10
+	const inteiro maxAlternativas=3
+	const cadeia op[]={"a","b","c"}
+	
+	
+cadeia perguntas[maxPerguntas][maxAlternativas+2]
+	cadeia respostas[maxPerguntas]
+
+	inteiro ponteiroPerguntas=0,ponteiroResposta=0,qtdPerguntas=0,qtdAlternativas=0
+	cadeia tela=""
+	
+	funcao inicio()
+	{
+	
+		Menu()
+	}
+
+	funcao Menu()
+	{
+		logico sair=falso
+		enquanto(nao sair)
+		{
+			limpa()
+			tela=ObterMenuPrincipal()
+			escreva(tela)
+			
+			inteiro opcao=LerOpcao()
+			escolha(opcao)
+			{
+				caso 1: CadastrarQuiz() pare
+				caso 2: ResponderQuiz() pare
+				caso 3: sair=verdadeiro pare
+				caso contrario: MostrarErro("Opção Inválida! Escolha de 1 a 3!") pare
+			}
+		}
+	}
+
+	funcao CadastrarQuiz()
+	{
+		logico sair=falso
+
+		enquanto(nao sair)
+		{
+			limpa()
+			tela=ObterMenuCadastro()
+			escreva(tela)
+			
+			inteiro opcao=LerOpcao()
+			
+			se(ponteiroPerguntas>0)
+			{
+				escolha(opcao)
+				{
+					caso 1: AdicionarPergunta() pare
+					caso 2: EditarPergunta() pare
+					caso 3: RemoverPergunta() pare
+					caso 4: ExcluirQuiz() pare
+					caso 5: sair=verdadeiro pare
+					caso contrario: MostrarErro("Opção Inválida! Escolha de 1 a 3!") pare
+				}	
+			}
+			senao
+			{
+				escolha(opcao)
+				{
+					caso 1: InserirNovoQuiz() pare
+					caso 2: sair=verdadeiro pare
+					caso contrario: MostrarErro("Opção Inválida! Escolha de 1 a 2!") pare
+				}	
+			}
+
+		}
+	}
+
+	funcao InserirNovoQuiz()
+	{		
+		logico qtdValida=falso
+		
+		enquanto(nao qtdValida)
+		{
+			qtdPerguntas=LerInteiroPositivo("Quantas perguntas terá o quiz?",falso)
+			
+			se(qtdPerguntas>maxPerguntas)
+			{
+				MostrarErro("O máximo de perguntas é: "+maxPerguntas)
+			}
+			senao
+			{
+				qtdValida=verdadeiro
+			}
+		}
+		
+		qtdValida=falso
+		enquanto(nao qtdValida)
+		{
+			qtdAlternativas=LerInteiroPositivo("Quantas alternativas terá o quiz?",falso)
+			
+			se(qtdPerguntas>maxAlternativas)
+			{
+				MostrarErro("O máximo de alternativas é: "+maxAlternativas)
+			}
+			senao
+			{
+				qtdValida=verdadeiro
+			}
+		}
+
+		para(inteiro i=0;i<qtdPerguntas;i++)
+		{	
+			AdicionarPergunta()
+		}
+	}
+
+	funcao AdicionarPergunta()
+	{
+		se(ponteiroPerguntas>=maxPerguntas)
+		{
+			MostrarErro("Não é possível cadastrar mais perguntas, máximo ("+maxPerguntas+") atingido!")
+		}
+		senao
+		{
+			cadeia pergunta,respostaCerta
+			logico sn,sair=falso
+			
+			limpa()
+			pergunta=LerCadeiaNaoNula("Digite a pergunta "+(ponteiroPerguntas+1)+":")
+
+			perguntas[ponteiroPerguntas][0]=pergunta
+	
+			para(inteiro j=0;j<qtdAlternativas;j++)
+			{
+				cadeia alternativa
+				
+				limpa()
+				alternativa=LerCadeiaNaoNula(pergunta+"\n\n"+op[j]+")")
+				
+				perguntas[ponteiroPerguntas][j+1]=alternativa
+			}
+
+			cadeia texto=ObterPerguntaComAlternativas(ponteiroPerguntas)
+			respostaCerta=LerAlternativa(texto+"Digite a resposta correta:")
+
+			perguntas[ponteiroPerguntas][4]=respostaCerta
+			
+			ponteiroPerguntas++
+			
+			MostrarMensagem("Pergunta incluída com sucesso!",2)
+		}
+	}
+
+	funcao EditarPergunta()
+	{
+		cadeia lista=ObterListaPerguntas()
+		cadeia respostaCerta
+		
+		se(ponteiroPerguntas>0)
+		{
+			inteiro indice=LerInteiroPositivo(lista+"\n\nQual pergunta será alterada?",falso)
+
+			cadeia pergunta=LerCadeiaNaoNula("Digite a pergunta "+(indice+1)+":")
+				
+			para(inteiro j=1;j<qtdAlternativas;j++)
+			{
+				cadeia alternativa
+				
+				limpa()
+				alternativa=LerCadeiaNaoNula(pergunta+"\n\n"+op[j]+")")
+				
+				perguntas[indice][j]=alternativa
+			}
+			
+			respostaCerta=LerAlternativa(ObterPerguntaComAlternativas(indice)+"Digite a resposta correta:")
+
+			perguntas[indice][4]=respostaCerta
+			
+			MostrarMensagem("Alterações salvas!",2)
+		}
+	}
+
+	funcao RemoverPergunta()
+	{
+		se(ponteiroPerguntas==0)
+		{
+			MostrarErro("Não existem perguntas cadastradas!")
+		}
+		senao
+		{
+			logico sair=falso,cancelar=falso
+			inteiro indice=0
+			
+			cadeia lista=ObterListaPerguntas()
+			limpa()
+
+			enquanto (nao sair ou (nao cancelar))
+			{
+				indice=LerInteiroPositivo(lista+"\n\nQual pergunta será excluída?",falso)-1
+				se(indice<ponteiroPerguntas)
+				{
+					sair=verdadeiro
+				}
+				senao
+				{
+					MostrarErro("Número de pergunta inválido!")
+					cancelar=LerSN("Deseja cancelar a exclusão?")
+				}
+			}
+
+			se (nao cancelar)
+			{
+				para(inteiro i=indice;i<ponteiroPerguntas-1;i++)
+				{
+					para(inteiro j=0;j<=(maxAlternativas+1);j++)
+					{
+						perguntas[i][j]=perguntas[i+1][j]
+					}
+				}
+				
+				ponteiroPerguntas--
+			}
+			
+			MostrarMensagem("Pergunta exluída com sucesso!",2)
+		}
+	}
+
+	funcao ExcluirQuiz()
+	{
+		logico confirmar=LerSN("Tem certeza que quer exlcuir todo o quiz?")
+
+		se(confirmar)
+		{	
+			ponteiroPerguntas=0
+			ponteiroResposta=0
+			qtdPerguntas=0
+			qtdAlternativas=0
+
+			MostrarMensagem("Quiz exluído com sucesso!",2)
+		}
+	}
+
+	funcao ResponderQuiz()
+	{	
+		se(ponteiroPerguntas>0)
+		{
+			cadeia nome=LerCadeiaNaoNula("Qual seu nome?")
+			inteiro respostasCorretas=0
+			logico reponder=verdadeiro
+			
+			limpa()
+	
+			enquanto(reponder)
+			{
+				para(inteiro i=0;i<ponteiroPerguntas;i++)
+				{
+					cadeia pergunta=(ObterPerguntaComAlternativas(i))
+					respostas[i]=LerAlternativa(pergunta)
+					se(respostas[i]==perguntas[i][4])
+					{
+						respostasCorretas++
+					}
+				}
+		
+				limpa()
+				MostrarErro("Parabéns! Você acertou "+respostasCorretas+" respostas!")
+	
+				reponder=LerSN("Deseja responder novamente?")
+			}
+		}
+		senao
+		{
+			MostrarErro("Não existem perguntas cadastradas!")
+		}
+	}
+
+	funcao cadeia ObterListaPerguntas()
+	{
+		cadeia lista=""
+		
+		limpa()
+		se(ponteiroPerguntas==0)
+		{
+			MostrarErro("Não existem perguntas cadastradas!")
+		}
+		senao
+		{
+			lista="Perguntas Cadastradas:\n\n"
+	
+			para(inteiro i=0;i<ponteiroPerguntas;i++)
+			{
+				lista += (i+1)+" - "+perguntas[i][0]
+				se((i+1)<ponteiroPerguntas)
+				{
+					lista += "\n\n"
+				}
+			}
+		}
+
+		retorne lista
+	}
+	
+	funcao cadeia ObterMenuPrincipal()
+	{		
+		cadeia menu=""
+		
+		menu += "1 - Cadastrar Quiz\n"
+		menu += "2 - Responder Quiz\n"
+		menu += "3 - Sair\n\n"
+
+		retorne menu
+	}
+	
+	funcao cadeia ObterMenuCadastro()
+	{		
+		cadeia menu=""
+
+		se(ponteiroPerguntas==0)
+		{
+			menu += "1 - Novo Quiz\n"
+			menu += "2 - Voltar\n\n"
+		}
+		senao
+		{
+			menu += "1 - Adicionar Pergunta\n"
+			menu += "2 - Editar Pergunta\n"
+			menu += "3 - Remover Pergunta\n"
+			menu += "4 - Excluir Quiz\n"
+			menu += "5 - Voltar\n\n"
+		}
+		retorne menu
+	}
+
+	funcao cadeia ObterPerguntaComAlternativas(inteiro indice)
+	{
+		cadeia texto=perguntas[indice][0]+"\n\n"
+
+		para(inteiro i=0;i<qtdAlternativas;i++)
+		{
+			texto+=op[i]+") "+perguntas[indice][i+1]+"\n\n"
+		}
+		
+		retorne texto
+	}
+	
+	funcao inteiro LerOpcao()
+	{
+		inteiro respostaInteiro=-1
+		cadeia respostaCadeia
+		
+		leia(respostaCadeia)
+		se (Tipos.cadeia_e_inteiro(respostaCadeia, 10))
+			{
+				respostaInteiro=Tipos.cadeia_para_inteiro(respostaCadeia, 10)
+			}
+			
+		retorne respostaInteiro
+	}
+
+	funcao inteiro LerInteiro(cadeia pergunta)
+	{
+		cadeia respostaCadeia
+		inteiro respostaInteiro=0
+		
+		faca
+		{	
+			limpa()
+			escreva(pergunta+"\n\n")
+			leia(respostaCadeia)
+			se (Tipos.cadeia_e_inteiro(respostaCadeia, 10))
+			{
+				respostaInteiro=Tipos.cadeia_para_inteiro(respostaCadeia, 10)
+			}
+			senao
+			{
+				MostrarErro("A resposta precisa ser número inteiro!")
+			}
+		}
+		enquanto (nao Tipos.cadeia_e_inteiro(respostaCadeia, 10))
+
+		retorne respostaInteiro
+	}
+		
+	funcao inteiro LerInteiroPositivo(cadeia pergunta,logico comZero)
+	{
+		inteiro respostaInteiro=-1
+		cadeia tipo="positivo"
+		se(comZero){tipo=+" ou zero"}
+		
+		faca
+		{	
+			respostaInteiro=LerInteiro(pergunta)
+			se (respostaInteiro<0 ou (nao comZero e respostaInteiro==0))
+			{
+				MostrarErro("O número precisa ser "+tipo+"!")
+			}
+			senao
+			{
+				retorne respostaInteiro
+			}
+		}
+		enquanto (respostaInteiro<0)
+
+		retorne respostaInteiro
+	}
+
+	funcao logico LerSN(cadeia perguntaSN)
+	{
+		cadeia SN=""
+		logico respostaSN=verdadeiro
+		logico sair=falso
+		
+		enquanto(nao sair)
+		{	
+			limpa()
+			escreva(perguntaSN+" (S/N)\n\n")
+			
+			leia(SN)
+			se(Texto.caixa_baixa(SN)=="s" ou Texto.caixa_baixa(SN)=="sim"){
+				respostaSN=verdadeiro
+				sair=verdadeiro
+				retorne respostaSN
+			} 
+	
+			se(Texto.caixa_baixa(SN)=="n" ou Texto.caixa_baixa(SN)=="nao" ou Texto.caixa_baixa(SN)=="não")
+			{
+				respostaSN=falso
+				sair=verdadeiro
+				retorne respostaSN
+			} 
+
+			MostrarErro("Reposta Inválida!\nA resposta deve ser S ou N")
+		}
+
+		
+		retorne respostaSN
+	}
+	
+	funcao cadeia LerCadeiaNaoNula(cadeia pergunta)
+	{
+		cadeia respostaCadeia=""
+		
+		enquanto (respostaCadeia=="")
+		{	
+			limpa()
+			escreva(pergunta+"\n\n")
+			leia(respostaCadeia)
+			se (respostaCadeia=="")
+			{
+				MostrarErro("A resposta não pode ficar em branco!")
+			}
+		}
+		
+		retorne respostaCadeia
+	}
+	
+	funcao MostrarMensagem(cadeia mensagem,real countDown)
+	{
+		limpa()
+		escreva(mensagem)
+		Util.aguarde(Tipos.real_para_inteiro(countDown*1000))
+		limpa()
+	}
+	
+	funcao MostrarErro(cadeia mensagem)
+	{
+		limpa()
+		escreva(mensagem)
+		AguardarEnter()
+		limpa()
+	}
+		
+	funcao cadeia LerAlternativa(cadeia pergunta)
+	{
+		cadeia respostaCadeia=""
+		
+		enquanto (respostaCadeia=="")
+		{
+			limpa()
+			escreva(pergunta+"\n\n")
+			leia(respostaCadeia)
+
+			respostaCadeia=Texto.caixa_baixa(respostaCadeia)
+			
+			
+			se (respostaCadeia=="a" ou respostaCadeia=="b" ou respostaCadeia=="c")
+			{	
+				se(qtdAlternativas==1 e respostaCadeia!="a")
+				{
+					respostaCadeia=""
+					MostrarErro("Alternativa Inválida!\n\n Deves responder a")
+				}
+				se(qtdAlternativas==2 e respostaCadeia=="c")
+				{
+					respostaCadeia=""
+					MostrarErro("Alternativa Inválida!\n\n Deves responder a ou b")
+				}
+			}
+			senao
+			{
+				respostaCadeia=""
+				MostrarErro("Alternativa Inválida!\n\n Deves responder a, b ou c")
+			}
+		}
+		retorne respostaCadeia
+	}
+
+	funcao AguardarEnter()
+	{	
+		cadeia enter
+		leia(enter)
+	}
+
+}
